@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-red-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-red-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-red-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: tashikmoin/red-nginx
+          ports:
+            - containerPort: 80

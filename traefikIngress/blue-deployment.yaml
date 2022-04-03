@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-blue-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-blue-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-blue-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: tashikmoin/blue-nginx
+          ports:
+            - containerPort: 80

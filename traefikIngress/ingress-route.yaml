@@ -1,0 +1,23 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressrgb
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: "Host(`20.203.120.160`) && Path(`/red/`)"
+      kind: Rule
+      services:
+        - name: service-red
+          port: 80
+    - match: "Host(`20.203.120.160`) && Path(`/green/`)"
+      kind: Rule
+      services:
+        - name: service-green
+          port: 80
+    - match: "Host(`20.203.120.160`) && Path(`/blue/`)"
+      kind: Rule
+      services:
+        - name: service-blue
+          port: 80

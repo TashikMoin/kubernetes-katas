@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-green-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-green-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-green-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: tashikmoin/green-nginx
+          ports:
+            - containerPort: 80

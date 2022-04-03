@@ -1,0 +1,63 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dashboard
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`<paste external/public ip or dns of traefik service here to access the dashboard>`)
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: canarydeployments
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`20.203.120.160`) && Headers(`From`,`red`)
+      kind: Rule
+      services:
+        - name: service-red
+          port: 80
+    - match: Host(`20.203.120.160`) && Headers(`From`,`green`)
+      kind: Rule
+      services:
+        - name: service-green
+          port: 80
+    - match: Host(`20.203.120.160`) && Headers(`From`,`blue`)
+      kind: Rule
+      services:
+        - name: service-blue
+          port: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: canarydeployments
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`20.203.120.160`) && (PathPrefix(`/red`))
+      kind: Rule
+      services:
+        - name: service-red
+          port: 80
+    - match: Host(`20.203.120.160`) && (PathPrefix(`/green`))
+      kind: Rule
+      services:
+        - name: service-green
+          port: 80
+    - match: Host(`20.203.120.160`) && (PathPrefix(`/blue`))
+      kind: Rule
+      services:
+        - name: service-blue
+          port: 80
