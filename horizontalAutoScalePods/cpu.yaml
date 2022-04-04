@@ -1,0 +1,28 @@
+# Note: before adding the "HorizontalPodAutoscaler" resource, make sure your cluster has a
+# "metrics server software" or any other metrics provider software that can provide metrics of
+# the pods/nodes etc in your cluster otherwise it would not work.
+
+# use siege for sending requests to increase the load.
+# siege -q -c 50 -t 1m http://20.203.120.160/blue/
+# -q for quite mode
+# -c means concurrent requests
+# -t time, means in 1min 50 requests will be sent
+
+# cooling periods
+# For scaling down it takes 5 minutes after stable situation.
+# For scaling up it takes 3 minutes.
+# After every 15 seconds, the utilization of pods is checked.
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cpuautoscalepods
+spec:
+  maxReplicas: 10
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-blue-deployment
+    # name of the deployment on which autoscaling will be applicable
+  targetCPUUtilizationPercentage: 10
