@@ -1,0 +1,79 @@
+reference: https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/
+
+There are 3 deployment strategies in Kubernetes
+1. RollingUpdates
+2. Recreate
+3. Canary deployment with ingress controller (forwarding traffic to different services 
+in canary pattern)
+
+
+maxSurge: Assigning a value 'x' to maxSurge means, first new pods will be created in the newly 
+created replicaSet and same 'x' amount of pods will then be deleted from the old replicaSet 
+(the maximum number of pods that can be created "OVER THE "DESIRED" NUMBER OF PODS").This can 
+be an absolute number or percentage of the replicas count
+
+Note: maxSurge creates 'n' "additional pods (other than desired state) and create them in the 
+new replicaSet first and then it deletes from the old replicaSet.
+
+
+maxUnavailable : the maximum number of pods that can be unavailable during the update process. 
+This also can be an absolute number or percentage of the replicas count; the default is 25%. 
+It first delete the pods in the existing replicaSet
+
+when both maxSurge and maxUnavailable are defined, rolling updates is done randomly but additional
+pods are created by maxSurge (other than desired pods).
+
+minReadySeconds is an optional field that specifies the minimum number of seconds for which a 
+newly created Pod should be ready without any of its containers crashing, for it to be considered
+available. This defaults to 0 (the Pod will be considered available as soon as it is ready).
+
+
+
+rollout ---> the process of the rollingupdate is called rollout.
+e.g
+kubectl rollout status deployment <deployment name>
+
+// gives the live rolling update information
+2 updated of 4
+3 updated of 4
+...
+rolled out successfully.
+
+
+
+
+rollout history ---> contains all the version/revision numbers of the application
+
+kubectl rollout history deployment <deployment name>
+REVISION    CHANGE_CAUSE(comment)
+1                           "fixed bug"
+2                            <none>
+...                               ...
+
+In order to add a change cause comment, execute the following command,
+kubectl annotate deployment <deployment name> kubernetes.io/change-cause="<change cause comment here>"
+// The last updated revision will now get a revision cause message after running this command.
+
+
+
+
+
+// command to rollback to a specific version number (revision)
+kubectl rollout undo deployment <deployment name> --to-revision=<revision/version number on which we want to rollback>
+
+
+
+
+we can set a revision history limit by defining under spec of a deployment
+revisionHistoryLimit: 10 // only 10 revisions are allowed 
+
+
+
+
+NOTE: for every entry/version/revision a separate replicaset is created. Whenever a new image
+or its version is updated in deployment file, a separate replicaSet is created for that version
+of the image and in future if again we update to an old image, same old replicaSet will be used.
+
+
+Performing a rolling update using image set command
+kubectl set image deployment <deployment name> <container name in deployment file>=<new image name>

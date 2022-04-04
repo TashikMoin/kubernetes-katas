@@ -16,3 +16,5 @@ spec:
         targetAverageUtilization: 50
 # do not forget to add memory metrics under resources of the deployment pod template. Otherwise,
 # it would not work.
+
+# uncomment memory under resources in blue-deployment.yaml file.

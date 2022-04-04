@@ -1,6 +1,6 @@
 # Note: before adding the "HorizontalPodAutoscaler" resource, make sure your cluster has a
-# "metrics server software" or any other metrics provider software that can provide metrics of
-# the pods/nodes etc in your cluster otherwise it would not work.
+# "metrics server software" or any other metrics provider software like "heapsters" that can
+# provide metrics of the pods/nodes etc in your cluster otherwise it would not work.
 
 # use siege for sending requests to increase the load.
 # siege -q -c 50 -t 1m http://20.203.120.160/blue/

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "100m"
+              # 100m cpu limit means this container cannot use more than 0.1% of the cpu
+              # 1000m --> 10% cpu
+              # 10000m --> 100% cpu
+
+              # memory: "1000mi"
+              # mi --> mebibytes
+              # 1mi --> 8.3 megabits
+              # 1mi --> 1.04858 megabytes
+            requests:
+              cpu: "100m"
+              # request limits make sure that the node will have proivded limit/capacity of cpu
+              # to schedule this pod.
+
+              # memory: '500mi'

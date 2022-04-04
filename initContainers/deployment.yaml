@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-blue-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: web-content-volume
+              mountPath: "/usr/share/nginx/html"
+      initContainers:
+        - name: init-web-content
+          image: alpine/git
+          command: ["/bin/sh", "-c"]
+          args:
+            - git clone https://github.com/TashikMoin/canary-deployments.git /content/;
+              cp -r /content/blue/* /blue/;
+              rm -rf /content;
+          volumeMounts:
+            - name: web-content-volume
+              mountPath: "/blue"
+      # - name: 2nd init container
+      #   image: busybox:1.28
+      # ...

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  revisionHistoryLimit: 10
+  replicas: 30
+  selector:
+    matchLabels:
+      name: nginx-pod-label
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 5 # 0
+      maxSurge: 0 # 5
+  template:
+    metadata:
+      labels:
+        name: nginx-pod-label
+    spec:
+      volumes:
+        - name: web-content-volume
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: nginx #use tashikmoin/blue-nginx image for update
+          ports:
+            - containerPort: 80
