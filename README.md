@@ -1,1 +1,1 @@
-# nginx-rgb
+# Kubernetes Katas
