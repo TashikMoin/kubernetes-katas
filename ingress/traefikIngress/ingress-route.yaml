@@ -1,3 +1,16 @@
+# match: Host(`20.203.120.160`) && Headers(`From`,`red`)
+# if a request has specific key:value pair in its header, then forward that request to
+# the given service
+# curl -H "From: red" http://20.203.120.160/
+
+# match: Host(`20.203.120.160`) && (PathPrefix(`/red`)
+# if any request has given pathPrefix in the URL then forward that request to the specified
+# service.
+
+# match: "Host(`20.203.120.160`) && Path(`/red/`)"
+# when defining a path, always add a / in the end
+# for e.g, write /red/, instead of /red
+
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
