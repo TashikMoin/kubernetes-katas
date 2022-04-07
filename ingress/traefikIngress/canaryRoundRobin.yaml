@@ -1,0 +1,32 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: canarydeploymentservice
+  namespace: default
+spec:
+  weighted:
+    services:
+      - name: canary-service-blue
+        port: 80
+        weight: 1
+      - name: canary-service-red
+        port: 80
+        weight: 1
+      - name: canary-service-green
+        port: 80
+        weight: 1
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: canaryroute
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`20.203.120.160`) # traefik service ip here from traefik namespace
+    kind: Rule
+    services:
+    - name: canarydeploymentservice
+      kind: TraefikService
