@@ -1,3 +1,5 @@
+# weighted round robin canary
+# reference: scroll and see roundrobin https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/
 apiVersion: traefik.containo.us/v1alpha1
 kind: TraefikService
 metadata:
@@ -25,8 +27,8 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`20.203.120.160`) # traefik service ip here from traefik namespace
-    kind: Rule
-    services:
-    - name: canarydeploymentservice
-      kind: TraefikService
+    - match: Host(`20.203.120.160`) # traefik service ip here from traefik namespace
+      kind: Rule
+      services:
+        - name: canarydeploymentservice
+          kind: TraefikService

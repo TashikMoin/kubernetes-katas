@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-demo
+data:
+  username: "tashikmoin"
+  password: "12345"
+  user-interface.properties: |
+    color.good=purple
+    color.bad=yellow
+    allow.textmode=true
+  # ...
+  # configmap <key> : "<values can be very large strings, plaintext>"
+  # configmap <key> : "<values can be very large strings, plaintext>"
+---
+# "when we update a configmap object data automatically, the pods gets the new data."
+
+---
+# syntax
+# kubectl create configmap <configmap> --from-literal --from-file
+
+# examples
+# kubectl create configmap <configmap> --from-literal=<configmap_key>=<configmap_value> --from-literal=<configmap_key>=<configmap_value>
+# it takes configmaps from literal
+
+# kubectl create configmap <configmap> --from-file<path to configmap file> --from-file<path to configmap file>
+# it takes configmaps from file.

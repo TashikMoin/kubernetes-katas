@@ -1,0 +1,14 @@
+# ConfigMaps are same as configmaps but they are stored as plaintext not in base64 encrypted form.
+
+# syntax
+# kubectl create configmap <configmap name> --from-literal --from-file 
+
+# examples
+# kubectl create configmap <configmap name> --from-literal=<configmap_key>=<configmap_value> --from-literal=<configmap_key>=<configmap_value>
+# it takes configmaps from literal
+
+# kubectl create configmap generic <configmap name> --from-file<path to configmap file> --from-file<path to configmap file>
+# it takes configmaps from file.
+
+
+# "when we update a configmap object data automatically but it takes some time to get updated."

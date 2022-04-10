@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-pod-label
+    spec:
+      volumes:
+        - name: configmapvolume # volume name
+          # possible volume types secret | configMap | emptyDir | cinder | or any cloud storage
+          # see all the volume type here https://kubernetes.io/docs/concepts/storage/volumes/
+          configMap:
+            # means it is a configmap type volume, data will come from a configmap
+            name: configmap-demo #<configmap name here from which the data will come>
+            # All the keys in a configmap will become a separate file and their values will
+            # be stored inside their respective files.
+      containers:
+        - name: nginx
+          image: nginx
+          volumeMounts:
+            - name: configmapvolume # volume name
+              mountPath: "/configmap" # volume mount path
+          ports:
+            - containerPort: 80
+          env:
+            - name: username
+              # <key name through which you want to access the configmap variable inside your pod without "">
+              valueFrom:
+                configMapKeyRef:
+                  name: configmap-demo # <name of the configmap object here>
+                  key: username # <key name inside configmap object without "">
+
+            - name: password
+              # <key name through which you want to access the configmap variable inside your pod without "">
+              valueFrom:
+                configMapKeyRef:
+                  name: configmap-demo # <name of the configmap object here>
+                  key: password # <key name inside configmap object without "">
+
+            - name: user-interface.properties
+              # <key name through which you want to access the configmap variable inside your pod without "">
+              valueFrom:
+                configMapKeyRef:
+                  name: configmap-demo # <name of the configmap object here>
+                  key: user-interface.properties # <key name inside configmap object without "">
+            # ...
