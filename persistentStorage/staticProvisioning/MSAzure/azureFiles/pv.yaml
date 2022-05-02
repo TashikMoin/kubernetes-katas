@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: azurefile-static-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+    # azure file share is shared between multiple nodes hence, supports ReadWriteMany access mode.
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: azurefile-csi
+  csi:
+    driver: file.csi.azure.com
+    readOnly: false
+    volumeHandle: unique-volumeid # make sure this volumeid is unique in the cluster
+    volumeAttributes:
+      resourceGroup: EXISTING_RESOURCE_GROUP_NAME # optional, only set this when storage account is not in the same resource group as agent node
+      shareName: aks-file-share # value of AKS_PERS_SHARE_NAME variable
+    nodeStageSecretRef:
+      name: azure-secret # secret object created using azureFileShareCreation.sh script
+      namespace: default
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=0
+    - gid=0
+    - mfsymlinks
+    - cache=strict
+    - nosharesock
+    - nobrl

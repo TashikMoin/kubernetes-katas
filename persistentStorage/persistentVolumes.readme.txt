@@ -1,0 +1,188 @@
+Persistent Volumes
+A Persistent Volume is an object in kubernetes that acts as an interface through which we can connect/plug-in
+our storage with our K8 cluster. The storage can be cloud storage, a separate nfs server, or local storage etc.
+Persistent Volume handles all of them by acting as an interface. 
+
+Note: Persistent volumes are not namespaced, they are available to the whole cluster! However, the PVC are
+namespaced and they should be in the same namespace as the pod.
+
+Note: Configmaps and Secrets are cluster local volumes and they are managed by kubernetes which means we
+do not have to create a pv and pvc for it.
+
+Supported persistent volumes in kubernetes hostpath, nfs, ebs, azure disk, etc
+the complete list is here,
+https://kubernetes.io/docs/concepts/storage/persistent-volumes/ (scroll to "Types of Persistent Volumes")
+
+
+Persistent Volume Claims
+A PersistentVolumeClaim (PVC) is a request for storage by a user. It is similar to a Pod. Pods consume node 
+resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). 
+Claims can request specific size and access modes (e.g., they can be mounted ReadWriteOnce, ReadOnlyMany or 
+ReadWriteMany, see AccessModes).
+
+
+
+
+
+
+Static Provisioning (Deployments)
+A cluster administrator creates a number of PVs. They carry the details of the real storage, which is 
+available for use by cluster users. They exist in the Kubernetes API and are available for consumption.
+
+- It is done when applications are deployed using deployment controllers
+- we request the cluster admin to create persistent volumes (PVs) and then we claim the PV using PVC.
+- when a claim request is made using pvc, all the available persistent volumes are checked and the best
+one is bounded with the pvc with requested/required size.
+
+the PVC in this case is created manually, but the underlying PV is created automatically/dynamically. 
+This is one of the possible ways to assign persistent storage to Deployments. The other method is to 
+manually create both the PV and PVC.
+
+Example of static provisioning: hostpath --> "manual creation of pv (created by admin) and pvc"
+
+
+Static and Dynamic Provisioning on Microsoft Azure,
+https://docs.microsoft.com/en-us/azure/aks/azure-disk-volume
+
+
+
+
+
+Dynamic provisioning (It is done when applications are deployed using statefulSets)
+When none of the static PVs the administrator created match a user's PersistentVolumeClaim, the 
+cluster may try to dynamically provision a volume specially for the PVC. This provisioning is 
+based on StorageClasses: the "PVC" must request a "storage class" and the administrator must 
+have created and configured that class for dynamic provisioning to occur. 
+
+- Creates pv using storage classes, no need to request the cluster administrator. The cluster 
+admin in case of dynamic provisioning only defines storage classes, the pv then is created 
+automatically.
+
+A "Fully"-Automatic" or "Fully"-Dynamic mechanism to create PV and PVCs automatically is available, but not 
+for the Deployment object. That is available for StatefulSet object. However, in case of deployment
+controllers, the user has to create a pvc but underlying pv is automatically created.
+
+
+reference: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+
+Static and Dynamic Provisioning on Microsoft Azure,
+https://docs.microsoft.com/en-us/azure/aks/azure-disk-volume
+
+
+
+
+
+
+Storage Classes
+    A storage class has actual physical storage underneath it - provided/managed by the cloud provider - 
+    or your cluster administrator; though, the storage class hides this information, and provides an 
+    abstraction layer for you. Normally, all cloud providers have a default storage class created for you, 
+    ready to be used.
+
+
+Note: Minikube provides a standard storageclass of type hostPath out of the box. Kubeadm based clusters do 
+not. Remember, minikube is a "single-node" cluster, so a storageclass of type hostpath makes sense on it. 
+On multi-node clusters using hostpath as a storageclass is stupidity.
+
+
+
+
+
+
+
+
+
+
+Reclaiming 
+When a user is done with their volume, they can delete the PVC objects from the API that allows reclamation 
+of the resource. The reclaim policy for a PersistentVolume tells the cluster what to do with the volume after 
+it has been "released of its claim". Currently, volumes can either be Retained, Recycled, or Deleted.
+
+The default reclaim policy is "Delete".
+Important Note: If hostpath in pv.yaml does not have a prefix of "/tmp" for e.g --> "/tmp/<your path>"
+then reclaim policy: delete will not work and it will not delete the pv even if the pvc is deleted.
+
+Reference: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#:~:text=When%20a%20user%20is%20done,Retained%2C%20Recycled%2C%20or%20Deleted.
+
+Reclaim policy
+- Delete (it means delete pv and external storage infrastructure when pvc is deleted)
+    The default reclaim policy is "Delete".
+    Important Note: If hostpath in pv.yaml does not have a prefix of "/tmp" for e.g --> "/tmp/<your path>"
+    then reclaim policy: delete will not work and it will not delete the pv even if the pvc is deleted.
+
+- Retain (it means do not delete the pv and external storage infrastructure if pvc is deleted. When the 
+  PersistentVolumeClaim is deleted, the PersistentVolume still exists and the volume is considered 
+  "released". This volume now cannot be used by other pvc. If you want to reuse the same storage asset, 
+  create a new PersistentVolume with the same storage asset definition.)
+
+- Recycle (If supported by the underlying volume plugin, the Recycle reclaim policy performs a basic scrub 
+  "rm -rf /thevolume/*" on the volume and makes it available again for a new claim. Recycle is deprecated
+  and it is recommended to use dynamic provisioning instead of using recycle.)
+
+
+Persistent Volume Access Modes
+
+- ReadWriteOnce – the volume can be mounted as read-write by a single "node" (The ReadWriteOnce access mode 
+  restricts volume access to a single node, which means it is possible for multiple pods on the same node to 
+  read from and write to the same volume.)
+
+
+- ReadWriteOncePod – the volume can be mounted as read-write by a single pod of a node (If you create a pod 
+  with a PVC that uses the ReadWriteOncePod access mode, Kubernetes ensures that pod is the only pod across 
+  your whole cluster that can read that PVC or write to it. If you create another pod that references the same 
+  PVC with this access mode, the pod will fail to start because the PVC is already in use by another pod.) 
+
+
+- ReadOnlyMany – the volume can be mounted read-only by many nodes
+
+
+- ReadWriteMany – the volume can be mounted as read-write by many nodes (Allow many nodes to access 
+  shared-cache simultaneously.)
+
+
+
+****************          IMPORTANT          **************
+
+Note: Pods cannot share PVCs in a deployment if the access mode is "readwriteoncepod" because only 1 pod
+can access the pvc at a time and we cannot scale up such deployments if the access mode is "readwriteoncepod".
+Also, if the access mode is "readwriteonce" then also this problem may occur because this access mode only 
+allows to access pvc to multiple pods on a "SAME" node only but if a pod is scheduled on another node the
+same problem will occur. Only if the readwritemultiple is the access mode, then only the pods in a deployment
+can share the pvc.
+
+ReadWriteMany is supported by NFS servers.
+NFS should only be used with deployment controllers and not with statefulsets because statefulset will 
+dynamically create a separate pvc for each pod from the shared nfs volume due to which there will be no
+synchronization.
+
+pods in a deployment do not share same pvc but they do share pvc if the configuration is "hostpath" 
+configuration(minikube/single node cluster) otherwise in multi-node cluster deployment controllers
+can never share the same pvc.
+
+"Deployment controller" or "Deployments" are light weight they should only be used with stateless applications.
+we can still use deployments for stateful applications if we use ReadWriteMany access mode with nfs server 
+or any other ReadWriteMany access mode storage system.
+
+
+
+
+
+
+
+
+
+Statefulsets (Dynamic provisioning)
+- Automatically creates pvc and pv both. We only request the amount of storage in statefulset's yaml file.
+- When we delete a statefulset pod, the pv is deleted but pvc is not deleted. Each pod has a "separate pvc"
+with a different pvc id in statefulset starting from 0 -> n. the first pod has pvc with id 0 and the second
+pod has pvc with id 1 and so on. 
+- when deletion is done, the deletion starts from the last nth pod (from latest) to the 0th (to old pods).
+- The creation is done from 0th -> nth pod order.
+- If pods of statefulset are deleted while scaling down, their pvc are not deleted and if the replicas are 
+scaled up again, the same old pvc will be used and they will get attached to their respective pods by matching
+the pod id with the pvc id.
+- The statefulset by default does not replicates/synchronizes the data between the persistent volumes of each
+pvc of each pod in a statefulset. Every pod has its own pvc and its own pv and hence a "separate state for 
+each pod". Still, we can make this happen by creating replicated statefulsets. The guide to create a replicated
+statefulset is given below,
+https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/

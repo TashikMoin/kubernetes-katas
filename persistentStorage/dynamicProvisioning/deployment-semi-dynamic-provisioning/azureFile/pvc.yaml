@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azurefile-dynamic
+spec:
+  accessModes:
+    - ReadWriteMany
+    # read write many is allowed in file storage because the file storage can be shared.
+  storageClassName: my-custom-azurefile
+  resources:
+    requests:
+      storage: 100Gi
+#
+#
+# shared file storage between multiple replicas using same pvc.

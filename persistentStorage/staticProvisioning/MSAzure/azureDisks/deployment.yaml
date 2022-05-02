@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      name: nginx-pod-label
+  template:
+    metadata:
+      labels:
+        name: nginx-pod-label
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: azure-disk-volume
+              mountPath: "/usr/share/nginx/html"
+      volumes:
+        - name: azure-disk-volume
+          persistentVolumeClaim:
+            claimName: pvc-azuredisk
+#
+# IMPORTANT
+# "Disks" are mounted on nodes and same disk cannot be mounted on multiple nodes at the same time
+# that is why azure disk does not supports "ReadWriteMany" access mode.

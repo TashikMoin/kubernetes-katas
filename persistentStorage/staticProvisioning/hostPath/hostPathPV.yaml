@@ -1,0 +1,21 @@
+# once the pvc that was associated with this pv is deleted, then no other pvc can be associated to this
+# pv even if we create the same pvc again, it will not bound with the old pv. we will have to delete the
+# pv also and recreate it.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-hostpath
+spec:
+  storageClassName: manual
+  # there is no storage class with name manual, this only indicates that we are doing static provisioning here.
+  # note: the pv and pvc both should have same storage class to bound successfully.
+  capacity:
+    storage: 1Gi # only integer values are allowed when requesting storages we cannot use float.
+  accessModes:
+    - ReadWriteOnce # means any pod on "that node only" can claim and use this persistent volume.
+  hostPath:
+    path: "/tmp/data"
+    # here the /tmp/ prefix is necessary in the host path when defining a pv otherwise reclaim policy
+    # "delete" will not delete the pv.
+    # The configuration file specifies that the volume is at /mnt/data on the "cluster's Node" where
+    # the pod was scheduled.

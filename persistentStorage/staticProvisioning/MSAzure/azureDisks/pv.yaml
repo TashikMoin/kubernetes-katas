@@ -1,0 +1,38 @@
+# Mount disk as volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-static-azuredisk # static because we are creating pv and pv manually and not using statefulset
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+    # deployment pods can share same pvc but statefulset pods can not.
+    # note access mode of pv and pvc should be same otherwise they will not bound.
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: managed-csi
+  csi:
+    driver: disk.csi.azure.com
+    readOnly: false
+    volumeHandle: /subscriptions/6dc668d5-101b-43b9-bd8b-346796e8d1f8/resourceGroups/MC_K8_K8_uaenorth/providers/Microsoft.Compute/disks/myAKSDisk
+    # environmental variable that was created in setup script to substitute the path of the handler
+    volumeAttributes:
+      fsType: ext4
+#
+# ---
+# IMPORTANT
+# "Disks" are mounted on nodes and same disk cannot be mounted on multiple nodes at the same time
+# that is why azure disk does not supports "ReadWriteMany" access mode.
+#
+# IMPORTANT
+# This pvc will be shared by pods of a specific node only. If the pods gets scheduled on other
+# nodes, then they will stuck in "containerCreation" status because the access mode is "RWO".
+#
+#
+# IMPORTANT NOTE
+# If PV stucks at terminating state and is not deleting, execute following command,
+# KUBE_EDITOR="nano" kubectl edit pv <pv name here>
+# Now comment "Finalizer" and everything under Finalizer that is,
+# - kubernetes.io/pv-protection
+# After that, the PV will be deleted automatically

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-hostpath
+spec:
+  storageClassName: manual
+  # there is no storage class with name manual, this only indicates that we are doing static provisioning here.
+  # note: the pv and pvc both should have same storage class to bound successfully.
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi # only integer values are allowed when requesting storages we cannot use float.
+# reference: https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+

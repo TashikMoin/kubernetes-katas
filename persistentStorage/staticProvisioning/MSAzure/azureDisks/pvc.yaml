@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azuredisk
+spec:
+  accessModes:
+    - ReadWriteOnce
+    # deployment pods can share same pvc but statefulset pods can not.
+    # note access mode of pv and pvc should be same otherwise they will not bound.
+  resources:
+    requests:
+      storage: 10Gi # claim all 100Gi from the PV
+  volumeName: pv-static-azuredisk # name of pv here
+  storageClassName: managed-csi
+---
+# IMPORTANT
+# "Disks" are mounted on nodes and same disk cannot be mounted on multiple nodes at the same time
+# that is why azure disk does not supports "ReadWriteMany" access mode.
+
+# IMPORTANT
+# This pvc will be shared by pods of a specific node only. If the pods gets scheduled on other
+# nodes, then they will stuck in "containerCreation" status because the access mode is "RWO".

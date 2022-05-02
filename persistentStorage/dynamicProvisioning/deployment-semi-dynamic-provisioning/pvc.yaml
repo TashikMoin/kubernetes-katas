@@ -1,0 +1,30 @@
+# In static disk provisioning we define pvv,pv and also we create a underlying hardware(disk) by
+# ourselves and refer that hardware inside pv yaml using volume handler.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dynamic-deployment-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-premium
+  # This class creates premium ssd we can also use default class that creates standard ssd.
+  resources:
+    requests:
+      storage: 5Gi
+# no need to create a pv because it is dynamic provisioning (semi dynamic provisioning because
+# if dynamic provisoning is done with deployments, then creating a pvc is a manual step but if
+# it is done with statefulsets then it is fully dynamic because with statefulsets we do not even
+# create pvc manually)
+
+# IMPORTANT
+# Since the access mode of this pvc is "ReadWriteOnce", and it is dynamic provisioning, hence,
+# all the replicas of deployment will be created on same node (pods are created on same node
+# if it is ReadWriteOnce mode and dynamic provisioning. If it was static disk provisioning the
+# pods could schedule on other nodes as well but they cannot run successfully. Only pods on a
+# specific node runs successfully and all the pod replicas will share this same pvc and its
+# underlying pv.
+
+# IMPORTANT
+# since the access mode is "ReadWriteOnce", all the replicas of deployment will be created on
+# same node and all the replicas will share this same pvc and its underlying pv.

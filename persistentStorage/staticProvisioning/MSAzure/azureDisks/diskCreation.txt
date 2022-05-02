@@ -1,0 +1,10 @@
+az aks show --resource-group <cluster resource group> --name <aks cluster name here> --query nodeResourceGroup -o tsv
+# this command will take K8 cluster resource group, and name as an input and it will give its 
+# nodeResourceGroup name as output
+
+az disk create --resource-group <first command output> --name <write disk name here> --size-gb <disk size here> --query id --output tsv
+
+# it creates a azure disk in the nodeResourceGroup of the cluster
+
+# IMPORTANT
+# This final command will give a disk handler url that will be used inside pv.yaml
