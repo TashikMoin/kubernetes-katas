@@ -1,0 +1,57 @@
+# Using daemonset, a single pod is created on every kubernetes node.
+
+# Note that DaemonSet deploys one pod per node. the number of pods would be as many as nodes.
+# you cant control the number of replicas. you need to change the object to either Deployment
+# or Statefulset to manage the replica count.
+
+# If a new node is attached, then also daemonSet creates a daemonSet pod inside it.
+
+# With daemonSets we can also attach "nodeSelector labels" to schedule pods only on those nodes
+# that has that label. By doing this, other nodes in the cluster will not get a daemonSet pod.
+
+# To add a label on a node use following command,
+# kubectl label node <node_name> <label key>:<label value>
+
+# To remove a label from a node/pod use the same command but replace label key with a '-',
+# kubectl label node <node_name>-
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-daemonset
+spec:
+  selector:
+    matchLabels:
+      pod: nginx-daemonset
+  template:
+    metadata:
+      labels:
+        pod: nginx-daemonset
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+      # nodeSelector:
+      #   jenkins: "true"
+
+      # Pods of this daemonSet will be scheduled on only those nodes that has "jenkins: true" label
+
+      # To add a label on a node use following command,
+      # kubectl label node <node_name> <label key>:<label value>
+
+      # To remove a label from a node/pod use the same command but replace label key with a '-',
+      # kubectl label node <node_name>-
+---
+#
+#
+
+# Output after deploying this daemonset in a 3 node cluster,
+
+# NAME                    READY   STATUS    RESTARTS   AGE   IP           NODE
+# nginx-daemonset-5b5ds   1/1     Running   0          79s   10.244.2.2   vmss00000c
+# nginx-daemonset-ffn2m   1/1     Running   0          79s   10.244.0.8   vmss00000d
+# nginx-daemonset-nxvhd   1/1     Running   0          79s   10.244.1.2   vmss00000e
+
+# IMPORTANT
+# if we uncomment nodeSelector and re apply this daemonSet.yaml file, then all the pods will terminate
+# because there is no node with label jenkins: "true" and hence no daemonSet pod will be scheduled.

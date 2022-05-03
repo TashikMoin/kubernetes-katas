@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "" # sc name should be empty string otherwise it will not work!
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: nfs
+      # pvc will look for the pv using this "nfs" label.
+      # Not using "volumeName" for pv-pvc bounding
