@@ -1,0 +1,37 @@
+# Reference: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: readiness
+  name: readiness-exec
+spec:
+  containers:
+    - name: readiness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - sleep 30; touch /tmp/healthy; sleep 600
+        # ready pods are those pods that are available for a service. A pod with containers
+        # reporting that they are not ready does not receive traffic through Kubernetes Services.
+        # Note: Readiness probes runs on the container during its whole lifecycle.
+
+        # Here, after the pod is created, the container sleeps for 30 seconds and the readiness
+        # check "cat /tmp/healthy" fails for the first 25 seconds (-5 of initial delay) because
+        # of the first sleep. After the first 30s sleep, the file is created and now the readiness
+        # check returns 0 which means success and now the pod's container are in ready state and
+        # hence the pod is now available for kubernetes services.
+      readinessProbe:
+        exec:
+          command: # readiness check commands
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        # The time an application takes to start after the pod creation so that a readiness
+        # check can be applied to that application running in a container.
+        periodSeconds: 5
+        # periodical time after which the readiness check is applied again and again.
+        timeoutSeconds: 15
+        # response waiting time, In this case, if a response for a readiness check is
+        # not sent till 15s, it will then create a new pod/container.

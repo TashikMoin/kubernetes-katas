@@ -34,5 +34,5 @@ spec:
         periodSeconds: 5
         # periodical time after which the liveness check is applied again and again.
         timeoutSeconds: 15
-        # response waiting time, In this case, if a response for a liveness check does not return
-        # any response till 15s, it will then create a new pod/container.
+        # response waiting time, In this case, if a response for a liveness check
+        # is not sent till 15s, it will then create a new pod/container.
