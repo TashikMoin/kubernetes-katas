@@ -1,0 +1,34 @@
+# Reference: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+    - name: liveness
+      image: k8s.gcr.io/busybox
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+        # It will create a /tmp/healthy file after pod creation and will sleep for 30 seconds.
+        # during the 30s sleep, the liveness check will satisfy and the "cat /tmp/healthy"
+        # command will return "0" which means success! if values other than 0 is returned
+        # by the liveness check command, then it is considered as unhealthy and the liveness
+        # check is failed and a new pod/container is created again. Kubernetes only monitors
+        # container health not the application's health running inside it. Using liveness probe
+        # check, we can monitor the application health and create new pod/container incase of
+        # unhealthy applications (failed liveness checks).
+      livenessProbe:
+        exec:
+          command: # liveness check commands
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        # The time an application takes to start after the pod creation so that a liveness
+        # check can be applied to that application running in a container.
+        # 5 seconds are enough to create a /tmp/healthy file after pod creation
+        periodSeconds: 5
+        # periodical time after which the liveness check is applied again and again.
