@@ -17,10 +17,11 @@ spec:
         # during the 30s sleep, the liveness check will satisfy and the "cat /tmp/healthy"
         # command will return "0" which means success! if values other than 0 is returned
         # by the liveness check command, then it is considered as unhealthy and the liveness
-        # check is failed and a new pod/container is created again. Kubernetes only monitors
-        # container health not the application's health running inside it. Using liveness probe
-        # check, we can monitor the application health and create new pod/container incase of
-        # unhealthy applications (failed liveness checks).
+        # check is failed and a new pod/container is created again. In this case, after 30 seconds
+        # sleep, the liveness check will start failing because the file is removed after first sleep
+        # of 30 seconds Kubernetes only monitors container health not the application's health
+        # running inside it. Using liveness probe check, we can monitor the application health
+        # and create new pod/container incase of unhealthy applications (failed liveness checks).
       livenessProbe:
         exec:
           command: # liveness check commands
@@ -32,3 +33,6 @@ spec:
         # 5 seconds are enough to create a /tmp/healthy file after pod creation
         periodSeconds: 5
         # periodical time after which the liveness check is applied again and again.
+        timeoutSeconds: 15
+        # response waiting time, In this case, if a response for a liveness check does not return
+        # any response till 15s, it will then create a new pod/container.
