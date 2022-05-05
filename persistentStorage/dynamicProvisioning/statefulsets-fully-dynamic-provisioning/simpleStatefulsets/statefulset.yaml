@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+    - port: 80
+      name: web
+  clusterIP: None
+  # This Headless service is responsible for the network identity of the Pods.
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  serviceName: "nginx"
+  replicas: 3
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: k8s.gcr.io/nginx-slim:0.8
+          ports:
+            - containerPort: 80
+              name: web
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        resources:
+          requests:
+            storage: 1Gi
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "managed-premium"
+        # using built-in managed-premium storage class for fully azure disk dynamic provisioning
+
+        # NOTE: we cannot use shared storage and shared storage's storage classes with statefulsets
+        # because the volume will not be shared between the pod's pvc and pvs instead the pv and pvc
+        # will slice the underlying storage and make isolated pv and pvc for each pod running in a
+        # statefulset.
+
+        # WARNING: DO NOT USE File storage like AzurefileShare etc / NFS with statefulset!
+
+        # we can also make our custom storage classes as well. In fully dynamic provisioning we only
+        # define the storage provisioning storage class and then define pods and associate pods
+        # with that storage class for fully dynamic provisioning of persistent storage.
+
+        # each pod will have its own pv,pvc in case of statefulsets which is not shared with other pods.
+
+        # each pod's pv,pvc running under a statefulset has its unique id starting from 0 -> n.
+
+        # creation of pods in a statefulset starts from 0 -> n order and not random. The 0th pod and pv,pvc
+        # are created first and then 1st then 2nd and so on.. The deletion is done in reverse order means
+        # n -> 0th pod and not random deletion.
+
+        # If a shared storage is provisioned for statefulset like nfs or fileshare storage, then still
+        # the statefulset does not share the storage because they have their own isolated pv,pvc and the
+        # pv,pvc will allocating persistent storage for the pods by slicing the underlying storage.

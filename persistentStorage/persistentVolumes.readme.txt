@@ -24,6 +24,26 @@ ReadWriteMany, see AccessModes).
 
 
 
+Storage Classes
+    A storage class has actual physical storage underneath it - provided/managed by the cloud provider - 
+    or your cluster administrator; though, the storage class hides this information, and provides an 
+    abstraction layer for you. Normally, all cloud providers have a default storage class created for you, 
+    ready to be used.
+
+
+Note: Minikube provides a standard storageclass of type hostPath out of the box. Kubeadm based clusters do 
+not. Remember, minikube is a "single-node" cluster, so a storageclass of type hostpath makes sense on it. 
+On multi-node clusters using hostpath as a storageclass is stupidity.
+
+
+
+
+
+
+
+
+
+
 
 Static Provisioning (Deployments)
 A cluster administrator creates a number of PVs. They carry the details of the real storage, which is 
@@ -34,11 +54,24 @@ available for use by cluster users. They exist in the Kubernetes API and are ava
 - when a claim request is made using pvc, all the available persistent volumes are checked and the best
 one is bounded with the pvc with requested/required size.
 
-the PVC in this case is created manually, but the underlying PV is created automatically/dynamically. 
-This is one of the possible ways to assign persistent storage to Deployments. The other method is to 
-manually create both the PV and PVC.
+the PV,PVC, and also the underlying physical storage in this case are created manually.
 
-Example of static provisioning: hostpath --> "manual creation of pv (created by admin) and pvc"
+Examples of static provisioning
+
+hostpath --> "manual creation of pv (created by admin), pvc and existing 
+node physical storage that is also created manually during cluster creation"
+
+azureDisk (same as hostPath but not using existing node storage) but additional step of creating 
+cloud disk storage that cannot be shared between other nodes only the node that gets the first 
+pod scheduled, K8s will mount this newly created disk storage on that node only and other pods 
+that are scheduled on other nodes, cannot use the same pvc,pv because the pv and pvc are associated
+with a specific node block storage and hence the pods on other nodes cannot share the same pv and 
+pvc and stucks on containercreating state. This is the reason ReadWriteMany is not supported with 
+this approach.
+
+azureFileShare ---> creating a shared file storage on cloud that is not mounted on any node like
+azureDisks. In this case, the physical storage is shared and pods scheduled on multiple nodes can
+easily sahred the same pv and pvc because the storage now is not specific to a node but outside.
 
 
 Static and Dynamic Provisioning on Microsoft Azure,
@@ -48,20 +81,21 @@ https://docs.microsoft.com/en-us/azure/aks/azure-disk-volume
 
 
 
-Dynamic provisioning (It is done when applications are deployed using statefulSets)
+Fully Dynamic provisioning (It is done when applications are deployed using statefulSets)
 When none of the static PVs the administrator created match a user's PersistentVolumeClaim, the 
 cluster may try to dynamically provision a volume specially for the PVC. This provisioning is 
 based on StorageClasses: the "PVC" must request a "storage class" and the administrator must 
 have created and configured that class for dynamic provisioning to occur. 
 
-- Creates pv using storage classes, no need to request the cluster administrator. The cluster 
-admin in case of dynamic provisioning only defines storage classes, the pv then is created 
-automatically.
 
-A "Fully"-Automatic" or "Fully"-Dynamic mechanism to create PV and PVCs automatically is available, but not 
-for the Deployment object. That is available for StatefulSet object. However, in case of deployment
-controllers, the user has to create a pvc but underlying pv is automatically created.
+- creation of required physical storage, pv, pvc (all done by kubernetes). We only have to create
+storage classes to tell kubernetes how to create and connect our physical storage with the cluster.
 
+- No need to request the cluster administrator. The cluster admin in case of dynamic provisioning 
+only defines storage classes.
+
+A "Fully"-Automatic" or "Fully"-Dynamic mechanism to create PV and PVCs automatically is available
+only for the statefulsets, but not for the Deployment object. 
 
 reference: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
@@ -73,16 +107,11 @@ https://docs.microsoft.com/en-us/azure/aks/azure-disk-volume
 
 
 
-Storage Classes
-    A storage class has actual physical storage underneath it - provided/managed by the cloud provider - 
-    or your cluster administrator; though, the storage class hides this information, and provides an 
-    abstraction layer for you. Normally, all cloud providers have a default storage class created for you, 
-    ready to be used.
-
-
-Note: Minikube provides a standard storageclass of type hostPath out of the box. Kubeadm based clusters do 
-not. Remember, minikube is a "single-node" cluster, so a storageclass of type hostpath makes sense on it. 
-On multi-node clusters using hostpath as a storageclass is stupidity.
+Semi-Dynamic Provisioning
+- It includes, manual creation of storage classes, and pvc.
+- The PV in this case is created automatically.
+- In PVC, we tell the name of the storage class and the storage class then creates the pvs for us.
+- done with deployments only not with the statefulsets.
 
 
 
