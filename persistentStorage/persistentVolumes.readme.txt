@@ -40,11 +40,6 @@ On multi-node clusters using hostpath as a storageclass is stupidity.
 
 
 
-
-
-
-
-
 Static Provisioning (Deployments)
 A cluster administrator creates a number of PVs. They carry the details of the real storage, which is 
 available for use by cluster users. They exist in the Kubernetes API and are available for consumption.
