@@ -1,0 +1,15 @@
+image: tashikmoin/blue-nginx
+replicas: 3
+podLabel: nginx-pod-label
+maxSurge: 3
+maxUnavailable: 0
+containerPort: 80
+servicePort: 80
+namespace: production
+serviceName: nginx-service
+deploymentName: nginx-deployment
+containerName: nginx
+
+# hierarchy syntax
+service:
+  type: LoadBalancer

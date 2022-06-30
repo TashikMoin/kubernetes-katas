@@ -1,0 +1,58 @@
+Steps for creating a chart
+1. Create a "Chart.yaml" ('C' should be capital) file inside your chart folder. 
+2. In your Chart.yaml file, define the mandatory metadata with 3 fields,
+    apiVersion: v1
+    name: demo-chart
+    version: 0.1.0
+    # these 3 fields are mandatory but we can define other fields like description:, appVersion: etc as well.
+
+3. Create a "templates" directory inside your chart directory, this templates directory contains all the yaml files of the application deployed under the chart.
+4. Run "helm install <name of the release> <path to the chart directory>
+    # This command deploys a new release of a chart everytime it is run.
+    e.g helm install my-first-release demo-chart(. in case of current directory)
+
+    OR
+
+    # if installing a helm chart from a repository
+    helm install <release name> <repo>/<chart name>  
+
+
+5. helm list OR helm list -n <namespace>
+   # This command lists all of the releases for a specified namespace
+
+6. helm upgrade <existing release name> <path to chart directory>
+    # To upgrade an existing release with a new version
+
+7. helm rollback <release name> <revision number of that release>
+   # This command rollbacks to specific version/revision and deploys the application with the specifications of that revision.
+
+8. helm delete <release name>
+   # This command deletes complete release with all its revisions.
+
+9. Create a values.yaml file inside your charts directory and define all your key-value paired variables so that no hard coding in your yamls is required anymore.
+   To use these variables in your yaml use this syntax to substitute the values from the values.yaml file,
+   {{.Values.<key name>}}
+
+10. In the values.yaml file, we can define hierarchy of key values like this,
+
+    # values.yaml
+    service:
+        type: NodePort
+
+    # some service yaml file
+    service:
+        type: {{.Values.service.type}}
+
+    
+11. To override a key-value pair during the helm upgrade command use --set flag,
+    for e.g, helm upgrade <release name> <path to charts> --set replicas=10
+
+12. To create a boiler plate chart directory and structure automatically that we have setup manually by creating directories manually use hel create command,
+    for e.g, helm create <chart name>
+
+13. To make your chart publicly available, we convert our chart into targz format using following command,
+    helm package <chart name>
+
+
+# reference for best practices: https://helm.sh/docs/chart_best_practices/ 
+
