@@ -1,0 +1,8 @@
+Request is the amount that the scheduler looks at when scheduling the pod. It is the minimum threshold of any 
+resource (CPU, memory) that pod needs to get scheduled on any cluster node. If the pod does not find
+the threshold specified inside the resource on any Kubernetes node, then we may see an un-schedulable error or 
+insufficient CPU, or memory error in events.
+
+limit is the amount of resources a pod can consume after getting scheduled. By default, if you don't set a limit, its value is set to infinity (0)
+which means the pod has no limit and can consume any amount of resources (CPU, memory) once scheduled (after finding the appropriate node based on the 
+defined resource request threshold).
