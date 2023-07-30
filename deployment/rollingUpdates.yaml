@@ -12,8 +12,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 5 # 0
-      maxSurge: 0 # 5
+      maxUnavailable: 0 # (How many pods CAN be unavailable from old replicaset(v1) of the deployment during the update process?)
+      maxSurge: 2 # (How many pods to create first in the new replicaset(v2) of the deployment during the update process?)
   template:
     metadata:
       labels:
@@ -27,3 +27,11 @@ spec:
           image: nginx #use tashikmoin/blue-nginx image for update
           ports:
             - containerPort: 80
+
+# If maxSurge = 2  and maxUnavailable = 0
+# create 2 pods first in new replicaset(v2) of the deployment because maxsurge is 2          current 12/10        desired 10/10
+# match the state by deleting 2 extra pods from old replicaset (v1) of the deployment       current 10/10        desired 10/10
+
+# If maxSurge = 2  and maxUnavailable = 1
+# 1. create 2 pods first in new replicaset(v2) and SIMULTANEOUSLY also delete 1 from old replicaset(v1) of the deployment because maxsurge is 2 and maxUnavailable is 1          current 12/10->11/10        desired 10/10
+# 2. match the state by deleting 2 extra pods from the old replica set (v1) of the deployment       current 10/10        desired 10/10
