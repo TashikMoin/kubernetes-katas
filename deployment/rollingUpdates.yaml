@@ -12,8 +12,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0 # (How many pods CAN be unavailable from old replicaset(v1) of the deployment during the update process?)
-      maxSurge: 2 # (How many pods to create first in the new replicaset(v2) of the deployment during the update process?)
+      maxUnavailable: 0 # (How many pods CAN be unavailable from old replicaset(v1) of the deployment during the update process?) means current state can be 9/10
+      maxSurge: 2 # (How many pods to create first in the new replicaset(v2) of the deployment during the update process?) means current state can be will increase by 2
   template:
     metadata:
       labels:
