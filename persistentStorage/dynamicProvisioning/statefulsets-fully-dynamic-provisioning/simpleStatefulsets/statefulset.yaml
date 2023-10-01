@@ -8,10 +8,15 @@ spec:
   ports:
     - port: 80
       name: web
-  clusterIP: None
-  # This Headless service is responsible for the network identity of the Pods.
   selector:
     app: nginx
+  clusterIP: None
+  # This Headless service is responsible for the network identity of the Pods.
+  # Instead of podIP.dns name it will allow podName.dns because if we use podIP.dns like in case of deployment, 
+  # pod will not be assigned same IP if recreated. This is needed because we want to distinguish master and slave pods
+  # for read and write operations and if we do by podIP.dns and if the master pod is recreated, we may lose its network identity.
+  # so to send write calls to master, we will use master_pod_name.<remaining dns> format and not <master_pod_ip>.<remaining dns>
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -38,7 +43,7 @@ spec:
           volumeMounts:
             - name: www
               mountPath: /usr/share/nginx/html
-  volumeClaimTemplates:
+  volumeClaimTemplates: # it will create pvcs using followign template automatically for each statefulset replica on run time if pods are scaled
     - metadata:
         name: www
       spec:
