@@ -30,8 +30,8 @@ spec:
 # that is why azure disk does not supports "ReadWriteMany" access mode.
 
 # IMPORTANT
-# Since the access mode of this pvc is "ReadWriteOnce", and it is dynamic provisioning, hence,
-# all the replicas of deployment will be created on same node (pods are created on same node
+# Since the access mode of this pvc is "ReadWriteOnce" (volume will be mounted only on a specific node and cant be shared), 
+# hance all the replicas of deployment will be created on same node. Pods are created on same node
 # if it is ReadWriteOnce mode and dynamic provisioning. If it was static disk provisioning the
 # pods could schedule on other nodes as well but they cannot run successfully. Only pods on a
 # specific node runs successfully and all the pod replicas will share this same pvc and its
