@@ -1,0 +1,162 @@
+Taints and Tolerations are mechanisms in Kubernetes that control which pods can or cannot be scheduled on certain nodes. Taints are applied to nodes, and tolerations 
+are applied to pods. Let’s break down each concept, how they work together, and provide some easy-to-understand examples.
+
+
+
+1. Taints
+
+What It Is: A taint is applied to a node to indicate that only specific pods should be scheduled on it. Think of it as a “keep out” sign for pods.
+
+How It Works: Taints consist of a key, value, and an effect. When you taint a node, you essentially make it undesirable for most pods. Only pods with the matching 
+toleration will be allowed to schedule on that node.
+
+Effects:
+NoSchedule: Pods without a matching toleration will not be scheduled on the node.
+
+PreferNoSchedule: Kubernetes will try to avoid placing pods without matching tolerations on the node but will do so if necessary.
+
+NoExecute: Pods without matching tolerations will be evicted if they are already on the node, and new pods will not be scheduled.
+
+
+Example:
+
+kubectl taint nodes <node-name> key=value:NoSchedule
+
+Here, any node with this taint will prevent pods that don’t have a matching toleration from being scheduled.
+
+
+
+Example:
+
+kubectl taint nodes node1 dedicated=database:NoSchedule
+
+This taint means that only pods tolerant to dedicated=database will be scheduled on node1.
+
+Other pods without a matching toleration for this taint won’t be scheduled here.
+
+
+
+
+
+
+
+
+2. Tolerations
+
+What It Is: A toleration is applied to a pod to let it “tolerate” specific taints on nodes.
+
+How It Works: Tolerations do not force a pod onto a node, but they allow the pod to be scheduled on nodes with matching taints. If a pod has a toleration 
+that matches a node’s taint, then it can be placed on that node.
+
+When to Use: When you want certain pods to be able to run on nodes that are restricted by taints.
+
+
+Example of a Pod with a Toleration:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-pod
+spec:
+  containers:
+  - name: mysql
+    image: mysql
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "database"
+    effect: "NoSchedule"
+
+
+This pod has a toleration for the dedicated=database taint with NoSchedule effect.
+
+The pod will only be able to schedule on nodes with the matching taint, allowing it to tolerate and be placed on nodes specifically marked for database.
+
+
+
+
+
+
+NoSchedule:
+Nodes with app=test:NoSchedule taint will prevent any pod without a matching toleration from being scheduled there.
+
+
+Example:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+  tolerations:
+  - key: "app"
+    operator: "Equal"
+    value: "test"
+    effect: "NoSchedule"
+
+
+This pod has a toleration for app=test:NoSchedule, allowing it to be scheduled on nodes with this taint.
+
+
+
+
+
+
+
+PreferNoSchedule:
+
+Nodes with environment=production:PreferNoSchedule taint discourage scheduling of pods without matching tolerations.
+
+
+Example:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+spec:
+  containers:
+  - name: web
+    image: nginx
+  tolerations:
+  - key: "environment"
+    operator: "Equal"
+    value: "production"
+    effect: "PreferNoSchedule"
+
+
+This pod can be scheduled on nodes without the environment=production:PreferNoSchedule taint, but if there are other nodes without the taint, it will be placed there first.
+NoExecute:
+
+Nodes with critical=true:NoExecute taint will immediately evict any pods that don’t have a matching toleration for that taint.
+
+
+Example:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: log-pod
+spec:
+  containers:
+  - name: logger
+    image: busybox
+  tolerations:
+  - key: "critical"
+    operator: "Equal"
+    value: "true"
+    effect: "NoExecute"
+
+
+This pod will not only be scheduled on nodes with the critical=true:NoExecute taint but will also stay on those nodes without being evicted.
+
+
+Summary
+Taints are applied to nodes and define rules that discourage or prevent scheduling of pods.
+Tolerations are applied to pods and allow them to tolerate nodes with specific taints.
+Use Cases:
+Use NoSchedule when you never want certain pods on specific nodes.
+Use PreferNoSchedule when you prefer not to schedule certain pods on specific nodes, but it’s okay if necessary.
+Use NoExecute when you want to immediately evict any pod that doesn’t tolerate a specific taint.
